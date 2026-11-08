@@ -1,0 +1,11 @@
+# Secretos
+.env
+.streamlit/secrets.toml
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Índice vectorial generado por indexar.py
+chroma_db/
