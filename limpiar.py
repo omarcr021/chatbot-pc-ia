@@ -4,7 +4,8 @@ Uso: python limpiar.py
 Resultado: data/limpio/*.md y data/limpio/_eliminadas.txt (para revisar qué se quitó)
 
 Regla principal: ante la duda, una línea se conserva. Las líneas con precios u
-horarios nunca se eliminan y ninguna línea se reescribe (solo se conserva o se quita).
+horarios nunca se eliminan y el texto de una línea nunca se reescribe. La única
+sustitución es la de los botones que cierran un plato o local por un separador.
 """
 
 import math
@@ -38,12 +39,17 @@ NAVEGACION = re.compile(
     (?:ir\ a(?:l)?\ (?:contenido|inicio)|saltar\ al\ contenido|volver(?:\ arriba)?
     |inicio|men[uú]|ver\ m[aá]s|ver\ todo|leer\ m[aá]s|mostrar\ m[aá]s|cerrar
     |anterior|siguiente|buscar|compartir|iniciar\ sesi[oó]n|reg[ií]strate
-    |mi\ cuenta|carrito|s[ií]guenos|aceptar|rechazar|configurar|entendido
+    |mi\ cuenta|carrito|ver|s[ií]guenos|aceptar|rechazar|configurar|entendido
     |pol[ií]tica\ de\ privacidad|t[eé]rminos\ y\ condiciones)
     [\s:.!>›»]*
     """,
     re.IGNORECASE | re.VERBOSE,
 )
+
+# Botones que cierran cada plato o local. Se cambian por SEPARADOR para que un precio no
+# quede pegado al plato siguiente e indexar.py no corte un plato por la mitad.
+FIN_DE_BLOQUE = re.compile(r"agregar|c[oó]mo llegar", re.IGNORECASE)
+SEPARADOR = "---"
 
 # Basta con que aparezca en la línea.
 AVISOS_LEGALES = re.compile(
@@ -141,6 +147,8 @@ def main():
         for i, linea in enumerate(lineas):
             if i in menu:
                 registro.append(f"{nombre}\tmenú repetido\t{linea.strip()}")
+            elif FIN_DE_BLOQUE.fullmatch(linea.strip()):
+                conservadas.append(SEPARADOR)
             elif es_eliminable_por_patron(linea):
                 registro.append(f"{nombre}\tnavegación/cookies\t{linea.strip()}")
             else:

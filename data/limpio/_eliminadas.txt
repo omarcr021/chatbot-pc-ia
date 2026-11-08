@@ -1,0 +1,28 @@
+alergenos.md	navegación/cookies	Ver
+alergenos.md	navegación/cookies	Ver
+alergenos.md	navegación/cookies	Ver
+alergenos.md	navegación/cookies	Ver
+alergenos.md	navegación/cookies	Ver
+alergenos.md	navegación/cookies	Ver
+alergenos.md	navegación/cookies	Ver
+alergenos.md	navegación/cookies	Ver
+alergenos.md	navegación/cookies	Ver
+carta_adicionales.md	menú repetido	Agregar
+carta_anticuchos.md	menú repetido	Agregar
+carta_brasa_cuarto.md	menú repetido	Agregar
+carta_brasa_entero.md	menú repetido	Agregar
+carta_brasa_medio.md	menú repetido	Agregar
+carta_chicha.md	menú repetido	Agregar
+carta_chicharrones.md	menú repetido	Agregar
+carta_ensalada_cocida.md	menú repetido	Agregar
+carta_ensalada_delicia.md	menú repetido	Agregar
+carta_ensalada_fresca.md	menú repetido	Agregar
+carta_gaseosas.md	menú repetido	Agregar
+carta_guarniciones.md	menú repetido	Agregar
+carta_mollejitas.md	menú repetido	Agregar
+carta_parrillero_bbq.md	menú repetido	Agregar
+carta_parrillero_hot.md	menú repetido	Agregar
+carta_parrillero_original.md	menú repetido	Agregar
+carta_postres.md	menú repetido	Agregar
+carta_sanguches.md	menú repetido	Agregar
+promociones.md	menú repetido	Agregar

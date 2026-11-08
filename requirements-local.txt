@@ -1,0 +1,4 @@
+# Solo para EMBEDDINGS_PROVIDER=sentence-transformers (instala PyTorch, es pesado)
+-r requirements.txt
+langchain-huggingface==1.2.3
+sentence-transformers==6.2.0

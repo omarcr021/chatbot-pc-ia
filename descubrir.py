@@ -13,8 +13,8 @@ from playwright.sync_api import sync_playwright
 
 from comun import DATA, TIMEOUT_MS, USER_AGENT, Robots, consola_utf8
 
-# Sitio oficial. Completar con la URL confirmada, por ejemplo "https://www.dominio.pe/".
-BASE = ""
+# Sitio oficial confirmado por el equipo.
+BASE = "https://www.pardoschicken.pe/"
 
 
 def dominio(url):

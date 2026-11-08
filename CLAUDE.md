@@ -11,7 +11,8 @@ los canales oficiales cuando no tiene la información.
 
 ## Stack
 - Python, Streamlit (interfaz web pensada para celular)
-- Modelo: Gemini API o Groq API (plan gratuito), con un modelo alterno de respaldo
+- Modelo: Gemini API con gemini-3.8-flash (obligatorio, plan gratuito), con un modelo
+  alterno de respaldo. Embeddings: gemini-embedding-001
 - RAG: LangChain + ChromaDB (FAISS como contingencia)
 - Despliegue: Streamlit Community Cloud (Render como contingencia)
 
@@ -29,8 +30,8 @@ los canales oficiales cuando no tiene la información.
 
 ## Estructura prevista
 app.py (interfaz), rag.py (recuperación), prompts.py, comun.py (utilidades del
-pipeline), descubrir.py, extraer.py, limpiar.py, indexar.py, data/ (contenido en .md),
-tests/ (casos de prueba)
+pipeline), descubrir.py, extraer.py, extraer_detalle.py, limpiar.py, generar_carta.py,
+indexar.py, data/ (contenido en .md), assets/ (imagen de la carta), tests/ (casos de prueba)
 
 ## Equipo y roles
 - Jefe de proyecto: Omar
