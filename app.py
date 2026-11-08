@@ -11,10 +11,12 @@ logging.getLogger("rag").setLevel(logging.INFO)
 
 st.set_page_config(page_title="Asistente Pardos", page_icon="🍗", layout="centered")
 
-# En Streamlit Cloud la clave viene de st.secrets; en local, de .env.
+# En Streamlit Cloud la configuración viene de st.secrets; en local, de .env.
+# Se copia al entorno antes de importar rag, que la lee al cargarse.
 try:
-    if "GOOGLE_API_KEY" in st.secrets:
-        os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+    for clave in ("GOOGLE_API_KEY", "GEMINI_MODEL", "GEMINI_MODEL_RESPALDO"):
+        if clave in st.secrets:
+            os.environ[clave] = str(st.secrets[clave])
 except FileNotFoundError:
     pass
 
@@ -66,7 +68,10 @@ def agregar_respuesta(pregunta):
 
 
 st.title("🍗 Asistente Pardos")
-st.caption("Mr. Pardos.")
+st.caption(
+    "Mr. Pardos. Proyecto académico inspirado en Pardos Chicken; no es el canal oficial. "
+    f"Pedidos y datos oficiales en {prompts.WEB}"
+)
 
 if "mensajes" not in st.session_state:
     reiniciar()
@@ -82,7 +87,7 @@ for mensaje in st.session_state.mensajes:
 sugerida = None
 if not st.session_state.mensajes:
     for texto in prompts.SUGERENCIAS:
-        if st.button(texto, use_container_width=True):
+        if st.button(texto, width="stretch"):
             sugerida = texto
 
 cerrado = st.session_state.cerrado

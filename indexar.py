@@ -3,6 +3,10 @@
 Uso:
   python indexar.py                                # reconstruye ./chroma_db
   python indexar.py --probar "¿Tienen delivery?"   # muestra los 3 fragmentos más cercanos
+  python indexar.py --compactar                    # quita restos de índices viejos (sin API)
+
+chroma_db/ se sube al repositorio para que la app desplegada no tenga que recalcular los
+vectores. Antes de hacer commit tras reindexar, ejecuta --compactar.
 
 El proveedor es Gemini (requiere GOOGLE_API_KEY en el entorno o en .env). Con
 EMBEDDINGS_PROVIDER=sentence-transformers se usa un modelo local (requirements-local.txt).
@@ -11,8 +15,10 @@ mismo modelo con el que se indexó.
 """
 
 import argparse
+import multiprocessing
 import os
 import re
+import shutil
 import sys
 import time
 import unicodedata
@@ -470,12 +476,59 @@ def buscar(pregunta, k=3):
     ]
 
 
+def copiar_indice(nueva):
+    """Copia la colección a la carpeta nueva con sus vectores guardados."""
+    origen = cliente_chroma().get_collection(COLECCION)
+    datos = origen.get(include=["documents", "embeddings", "metadatas"])
+    destino = chromadb.PersistentClient(
+        path=str(nueva), settings=Settings(anonymized_telemetry=False)
+    ).create_collection(COLECCION, metadata=origen.metadata)
+    destino.add(
+        ids=datos["ids"],
+        documents=datos["documents"],
+        embeddings=datos["embeddings"],
+        metadatas=datos["metadatas"],
+    )
+    if destino.count() != origen.count():
+        raise RuntimeError("La copia del índice quedó incompleta.")
+
+
+def compactar():
+    """Copia el índice a una carpeta nueva, sin los restos de colecciones borradas.
+
+    Chroma no borra del disco los vectores de una colección eliminada, y cada reindexación
+    deja unos 1.2 MB de restos. Reutiliza los vectores guardados: no llama a la API.
+    """
+    nueva = CHROMA_DIR.with_name(CHROMA_DIR.name + "_nuevo")
+    shutil.rmtree(nueva, ignore_errors=True)
+
+    # La copia corre en otro proceso: Chroma no suelta sus archivos mientras el proceso
+    # vive, y en Windows no se puede reemplazar una carpeta con archivos abiertos.
+    proceso = multiprocessing.Process(target=copiar_indice, args=(str(nueva),))
+    proceso.start()
+    proceso.join()
+    if proceso.exitcode != 0:
+        shutil.rmtree(nueva, ignore_errors=True)
+        sys.exit("No se pudo copiar el índice; chroma_db quedó como estaba.")
+
+    shutil.rmtree(CHROMA_DIR)
+    nueva.rename(CHROMA_DIR)
+    print(f"Índice compactado en {CHROMA_DIR}")
+
+
 def main():
     consola_utf8()
 
     argumentos = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     argumentos.add_argument("--probar", metavar="PREGUNTA", help="prueba la recuperación")
-    pregunta = argumentos.parse_args().probar
+    argumentos.add_argument("--compactar", action="store_true",
+                            help="quita del disco los restos de índices anteriores")
+    opciones = argumentos.parse_args()
+    pregunta = opciones.probar
+
+    if opciones.compactar:
+        compactar()
+        return
 
     if pregunta is None:
         indexar()

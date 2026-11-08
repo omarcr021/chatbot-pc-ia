@@ -7,5 +7,5 @@
 __pycache__/
 *.pyc
 
-# Índice vectorial generado por indexar.py
-chroma_db/
+# Copia temporal de indexar.py --compactar
+chroma_db_nuevo/
