@@ -88,6 +88,21 @@ ZONA_POR_CIUDAD = {
     "Lima": "lima", "Arequipa": "arequipa", "Chiclayo": "chiclayo_trujillo", "Trujillo": "chiclayo_trujillo",
 }
 ZONA_POR_LOCAL = {"PARDOS ASIA": "asia", "PARDOS AEROPUERTO": "aeropuerto"}  # tienen carta propia
+# La carta salón de Lima vale para toda la provincia de Lima, y para el Callao, que la web
+# también clasifica como Lima (Pardos Bellavista). Normalizados, con alias comunes.
+DISTRITOS_LIMA = (
+    "lima norte", "lima sur", "lima este", "lima centro", "lima metropolitana", "cercado de lima",
+    "ancon", "ate", "ate vitarte", "barranco", "brena", "carabayllo", "chaclacayo", "chorrillos",
+    "cieneguilla", "comas", "el agustino", "independencia", "jesus maria", "la molina",
+    "la victoria", "lince", "los olivos", "lurigancho", "chosica", "lurin", "magdalena",
+    "magdalena del mar", "miraflores", "pachacamac", "pucusana", "pueblo libre",
+    "puente piedra", "punta hermosa", "punta negra", "rimac", "san bartolo", "san borja",
+    "san isidro", "san juan de lurigancho", "sjl", "san juan de miraflores", "sjm", "san luis",
+    "san martin de porres", "smp", "san miguel", "santa anita", "santa maria del mar",
+    "santa rosa", "santiago de surco", "surco", "surquillo", "villa el salvador",
+    "villa maria del triunfo", "callao", "bellavista", "carmen de la legua", "la perla",
+    "la punta", "ventanilla", "mi peru",
+)
 ZONAS_SALON = sorted(set(ZONA_POR_CIUDAD.values()) | set(ZONA_POR_LOCAL.values()))
 RE_CIUDAD = re.compile(r"^Ciudad: (.+)$", re.MULTILINE)
 MAX_SECCIONES_SALON = 25  # para devolver una carta salón completa
@@ -416,7 +431,12 @@ def zonas_mencionadas(pregunta, coleccion):
         for nombre in locales_mencionados(pregunta, ciudad_por_local)
     }
     texto = normalizar(pregunta)
-    zonas |= {zona for ciudad, zona in ZONA_POR_CIUDAD.items() if contiene_frase(texto, normalizar(ciudad))}
+    ciudades = {zona for ciudad, zona in ZONA_POR_CIUDAD.items() if contiene_frase(texto, normalizar(ciudad))}
+    # Un distrito de Lima cuenta como Lima, salvo que nombren otra ciudad: Miraflores y
+    # La Victoria también existen en Arequipa y Chiclayo.
+    if not ciudades and any(contiene_frase(texto, distrito) for distrito in DISTRITOS_LIMA):
+        ciudades.add("lima")
+    zonas |= ciudades
     return sorted(z for z in zonas if z)
 
 
@@ -443,7 +463,8 @@ def buscar(pregunta, k=3):
     """Devuelve hasta k fragmentos cercanos con sus metadatos y distancia coseno.
 
     Si es sobre consumo presencial, busca en la carta salón de la zona.
-    Si la pregunta es sobre un local concreto, devuelve solo los fragmentos de ese local.
+    Si la pregunta es sobre un local concreto, devuelve solo los fragmentos de ese local;
+    si además pide precios o una recomendación, suma la carta salón de la zona del local.
     Si pide la carta completa, devuelve todas las secciones del resumen de la carta.
     Si es por un precio, busca solo en carta y promociones.
     """
@@ -460,16 +481,33 @@ def buscar(pregunta, k=3):
         embedding_function=crear_embeddings(metadatos["proveedor"], metadatos["modelo"]),
     )
     filtro = filtro_por_salon(pregunta, coleccion)
+    filtro_extra = None
     if filtro is not None:
         if pide_carta_completa(pregunta):
             k = MAX_SECCIONES_SALON  # la carta salón completa de la zona
     else:
         filtro = filtro_por_local(pregunta, coleccion)
+        pide_local = RE_UBICACION.search(normalizar(pregunta))
+        if pide_local and filtro_por_precio(pregunta):
+            # "Somos 8 con S/ 300, ¿algún local en San Borja?": el local y sus precios.
+            zonas = zonas_mencionadas(pregunta, coleccion)
+            if zonas:
+                filtro_extra = {"categoria": {"$in": [PREFIJO_SALON + zona for zona in zonas]}}
+                # Un distrito sin local con ese nombre: los locales más cercanos al texto.
+                filtro = filtro or {"categoria": "locales"}
         if filtro is None and pide_carta_completa(pregunta):
             filtro = {"categoria": CATEGORIA_RESUMEN}
             k = len(SECCIONES_CARTA)  # todas las secciones, no solo las k más parecidas
         filtro = filtro or filtro_por_precio(pregunta)
-    resultados = almacen.similarity_search_with_score(pregunta, k=k, filter=filtro)
+
+    vector = almacen.embeddings.embed_query(pregunta)  # un solo embedding por búsqueda
+    resultados = almacen.similarity_search_by_vector_with_relevance_scores(
+        vector, k=k, filter=filtro
+    )
+    if filtro_extra is not None:
+        resultados += almacen.similarity_search_by_vector_with_relevance_scores(
+            vector, k=k, filter=filtro_extra
+        )
     return [
         {"texto": doc.page_content, "distancia": round(distancia, 4), **doc.metadata}
         for doc, distancia in resultados
