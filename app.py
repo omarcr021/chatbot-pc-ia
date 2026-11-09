@@ -57,7 +57,7 @@ def agregar_respuesta(pregunta):
         st.markdown(pregunta)
 
     with st.chat_message("assistant"):
-        with st.spinner("Revisando la carta..."):
+        with st.spinner("..."):
             respuesta = responder(pregunta, historial)
         texto = texto_tras_spam(respuesta.texto) if respuesta.spam else respuesta.texto
         st.markdown(texto)

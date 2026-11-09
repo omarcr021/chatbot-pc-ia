@@ -102,7 +102,7 @@ BIENVENIDA = (
 
 SUGERENCIAS = [
     "¿Cuánto cuesta 1/4 de pollo?",
-    "Somos 4 y tenemos S/ 120, ¿qué nos recomiendas?",
+    "Somos 4 y tenemos S/ 150, ¿qué nos recomiendas?",
     "¿Cuál es el horario de Chorrillos?",
     "¿Qué medios de pago aceptan?",
 ]
