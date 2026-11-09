@@ -67,10 +67,9 @@ def agregar_respuesta(pregunta):
     )
 
 
-st.title("🍗 Asistente Pardos")
+st.title("🍗 PardosBot")
 st.caption(
-    "Mr. Pardos. Proyecto académico inspirado en Pardos Chicken; no es el canal oficial. "
-    f"Pedidos y datos oficiales en {prompts.WEB}"
+    "Asistente virtual de Pardos Chicken."
 )
 
 if "mensajes" not in st.session_state:
