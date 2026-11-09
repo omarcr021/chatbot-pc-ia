@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from comun import consola_utf8
-from rag import responder
+from rag import MODELO, responder
 
 PAUSA_S = 3
 
@@ -110,7 +110,7 @@ def main():
             errores += r.error
             if r.modelo:
                 latencias.append(r.latencia_s)
-                respaldo += r.modelo != "gemini-3.8-flash"
+                respaldo += r.modelo != MODELO
                 time.sleep(PAUSA_S)
             print(f"{'OK   ' if paso else 'FALLA'} {turno['p'][:70]}")
             print(f"      [{r.modelo or '-'} | {r.latencia_s:.1f}s | spam={r.spam}] consulta: {r.consulta[:80]}")

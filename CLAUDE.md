@@ -11,7 +11,7 @@ los canales oficiales cuando no tiene la información.
 
 ## Stack
 - Python, Streamlit (interfaz web pensada para celular)
-- Modelo: Gemini API con gemini-3.8-flash (obligatorio, plan gratuito), con un modelo
+- Modelo: Gemini API con gemini-3.5-flash-lite (obligatorio, plan gratuito), con un modelo
   alterno de respaldo. Embeddings: gemini-embedding-001
 - RAG: LangChain + ChromaDB (FAISS como contingencia)
 - Despliegue: Streamlit Community Cloud (Render como contingencia)

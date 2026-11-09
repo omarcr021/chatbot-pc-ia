@@ -16,7 +16,7 @@ from indexar import buscar, normalizar, pide_carta_completa  # también carga .e
 
 log = logging.getLogger(__name__)
 
-MODELO = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+MODELO = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
 MODELO_RESPALDO = os.environ.get("GEMINI_MODEL_RESPALDO", "gemini-3.5-flash")
 
 MAX_PREGUNTA = 500
